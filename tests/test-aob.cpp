@@ -11,3 +11,13 @@ TEST_CASE("check first byte is correct") {
   // This one should fail.
   CHECK(!function_compare<0xAA, 0xBB, 0xAA>::compare(test_arr));
 }
+
+TEST_CASE("check aob with vector class") {
+  std::vector<std::uint8_t> v{ 0xAA, 0xBB, 0xCC, 0xDD };
+  CHECK(function_compare<0xAA, 0xBB, 0xCC>::compare(v.begin()));
+
+  // This one should fail.
+  CHECK(!function_compare<0xAA, 0xBB, 0xCC>::compare(v.begin() + 1));
+
+  CHECK(function_compare<0xBB, 0xCC, 0xDD>::compare(v.begin() + 1));
+}

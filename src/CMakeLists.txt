@@ -9,5 +9,5 @@ add_library(
 target_include_directories(sapeaob PUBLIC .)
 
 if (MSVC)
-	target_compile_options(sapeaob PUBLIC /W4)
+	target_compile_options(sapeaob PUBLIC /W3)
 endif()
