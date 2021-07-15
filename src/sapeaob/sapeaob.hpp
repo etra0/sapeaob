@@ -11,9 +11,9 @@ struct function_compare {
     return true;
   }
 
-  template <std::uint8_t F, std::uint8_t... B>
+  template <std::uint8_t Fx, std::uint8_t... Bx>
   static constexpr bool compare_(std::uint8_t* arr, std::size_t offset) {
-    return *(arr + offset) == F && function_compare::compare_<B...>(arr, offset + 1);
+    return *(arr + offset) == Fx && function_compare::compare_<Bx...>(arr, offset + 1);
   }
 
 };
