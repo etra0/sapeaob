@@ -6,16 +6,15 @@ enum op : std::uint16_t {
   ANY = 0x100,
 };
 
-template <std::uint16_t F, std::uint16_t... B>
-struct function_compare {
-  template <class it>
-  constexpr static bool compare(it arr) {
+template <std::uint16_t F, std::uint16_t... B> struct function_compare {
+  template <class it> constexpr static bool compare(it arr) {
     return function_compare::compare_<it, F, B...>(arr, 0);
   }
 
-  private:
-  template <class it, class _ =  void>
-  static constexpr bool compare_(it arr, [[maybe_unused]] std::size_t offset) {
+private:
+  template <class it, class _ = void>
+  static constexpr bool compare_([[maybe_unused]] it arr,
+                                 [[maybe_unused]] std::size_t offset) {
     return true;
   }
 
@@ -27,9 +26,9 @@ struct function_compare {
     if constexpr ((Fx & ANY) != 0) {
       return function_compare::compare_<it, Bx...>(arr, offset + 1);
     }
-    return *(arr + offset) == val && function_compare::compare_<it, Bx...>(arr, offset + 1);
+    return *(arr + offset) == val &&
+           function_compare::compare_<it, Bx...>(arr, offset + 1);
   }
-
 };
 
-}
+} // namespace sapeaob

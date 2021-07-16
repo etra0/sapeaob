@@ -33,3 +33,13 @@ TEST_CASE("Add the option to use any") {
   // this one should fail
   REQUIRE_FALSE(function_compare<0xAA, ANY, 0xAA>::compare(test_arr + 1));
 }
+
+// This is discouraged but anyway we need to check this works.
+TEST_CASE("Single value to scan") {
+  std::uint8_t test_arr[] = {0xAA, 0xBB, 0xCC};
+  CHECK(function_compare<0xAA>::compare(test_arr));
+
+  CHECK(function_compare<ANY>::compare(test_arr));
+
+  REQUIRE_FALSE(function_compare<0xBB>::compare(test_arr));
+}
