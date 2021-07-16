@@ -43,3 +43,29 @@ TEST_CASE("Single value to scan") {
 
   REQUIRE_FALSE(function_compare<0xBB>::compare(test_arr));
 }
+
+TEST_CASE("Scan for an AOB") {
+  std::uint8_t test_arr[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xAA};
+  pattern<0xCC, 0xDD> p{};
+  std::uintptr_t result = p.scan_match(test_arr, 5);
+  CHECK(result == reinterpret_cast<std::uintptr_t>(&*(test_arr + 2)));
+}
+
+TEST_CASE("Scan for an AOB with ANY") {
+  std::uint8_t test_arr[] = {0xFF, 0xAA, 0xBB, 0xAA, 0xDD, 0xAA};
+  pattern<0xAA, ANY, 0xAA> p{};
+  std::uintptr_t result = p.scan_match(test_arr, sizeof(test_arr));
+
+  CHECK(result == reinterpret_cast<std::uintptr_t>(test_arr + 1));
+
+  result = p.scan_match(test_arr + 2, sizeof(test_arr) - 1);
+
+  CHECK(result == reinterpret_cast<std::uintptr_t>(test_arr + 3));
+}
+
+TEST_CASE("Pattern not found") {
+  std::uint8_t test_arr[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xFF};
+  pattern<0xAA, ANY, 0xFE> p{};
+  std::uintptr_t result = p.scan_match(test_arr, sizeof(test_arr));
+  REQUIRE_FALSE(result);
+}

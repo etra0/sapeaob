@@ -31,4 +31,26 @@ private:
   }
 };
 
+template <std::uint16_t... PAT> struct pattern {
+  explicit pattern() {};
+
+  template<class it>
+  std::uintptr_t scan_match(it arr, std::size_t size);
+};
+
+template <std::uint16_t... PAT>
+template <class it>
+std::uintptr_t pattern<PAT...>::scan_match(it arr, std::size_t size) { 
+  std::size_t offset = 0;
+  constexpr std::size_t pattern_size = sizeof...(PAT);
+
+  while (offset + pattern_size < size) {
+    if (function_compare<PAT...>::compare(arr + offset))
+      return reinterpret_cast<std::uintptr_t>(arr + offset);
+    offset++;
+  };
+
+  return 0;
+}
+
 } // namespace sapeaob
