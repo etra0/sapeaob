@@ -44,9 +44,13 @@ std::uintptr_t pattern<PAT...>::scan_match(it arr, std::size_t size) {
   std::size_t offset = 0;
   constexpr std::size_t pattern_size = sizeof...(PAT);
 
-  while (offset + pattern_size < size) {
-    if (function_compare<PAT...>::compare(arr + offset))
-      return reinterpret_cast<std::uintptr_t>(arr + offset);
+  while (offset + pattern_size <= size) {
+    if (function_compare<PAT...>::compare(arr + offset)) {
+      std::uintptr_t res = reinterpret_cast<std::uintptr_t>(
+          static_cast<std::uint8_t *>(&*(arr + offset)));
+      return res;
+
+    }
     offset++;
   };
 
