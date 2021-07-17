@@ -1,7 +1,7 @@
 # SapeAOB - A compile time function generation for pattern scans.
 
-A micro-library which aids to create pattern scanning functions to be created at compile time to
-enjoy that sweet compiler optimizations when doing ifs.
+A micro-library which aids to create pattern scanning functions at compile time to
+enjoy that sweet compiler optimizations!
 
 # Usage
 ```cpp
