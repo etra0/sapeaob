@@ -1,13 +1,9 @@
 cmake_minimum_required (VERSION 3.8)
 
-add_library(
-	sapeaob
-	main.cpp
-	sapeaob/sapeaob.hpp
-  )
+add_library(sapeaob INTERFACE)
 
-target_include_directories(sapeaob PUBLIC .)
+target_include_directories(sapeaob INTERFACE .)
 
 if (MSVC)
-	target_compile_options(sapeaob PUBLIC /W3)
+	target_compile_options(sapeaob INTERFACE /W3)
 endif()
