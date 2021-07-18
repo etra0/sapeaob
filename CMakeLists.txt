@@ -11,3 +11,8 @@ if(BUILD_TESTING)
 	include(CTest)
 	add_subdirectory(tests)
 endif()
+
+if (BUILD_BENCHMARK)
+  add_subdirectory(benchmark)
+endif()
+
