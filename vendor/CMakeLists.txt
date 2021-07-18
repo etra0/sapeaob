@@ -1,3 +1,5 @@
 cmake_minimum_required (VERSION 3.8)
 
-include(doctest.cmake)
+if (BUILD_TESTING)
+	include(doctest.cmake)
+endif()

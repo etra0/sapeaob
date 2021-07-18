@@ -32,15 +32,14 @@ private:
 };
 
 template <std::uint16_t... PAT> struct pattern {
-  explicit pattern() {};
+  explicit pattern(){};
 
-  template<class it>
-  std::uintptr_t scan_match(it arr, std::size_t size);
+  template <class it> std::uintptr_t scan_match(it arr, std::size_t size);
 };
 
 template <std::uint16_t... PAT>
 template <class it>
-std::uintptr_t pattern<PAT...>::scan_match(it arr, std::size_t size) { 
+std::uintptr_t pattern<PAT...>::scan_match(it arr, std::size_t size) {
   std::size_t offset = 0;
   constexpr std::size_t pattern_size = sizeof...(PAT);
 
@@ -49,7 +48,6 @@ std::uintptr_t pattern<PAT...>::scan_match(it arr, std::size_t size) {
       std::uintptr_t res = reinterpret_cast<std::uintptr_t>(
           static_cast<std::uint8_t *>(&*(arr + offset)));
       return res;
-
     }
     offset++;
   };
