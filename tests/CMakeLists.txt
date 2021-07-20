@@ -1,10 +1,16 @@
 cmake_minimum_required(VERSION 3.8)
 
-include(${CMAKE_SOURCE_DIR}/vendor/doctest/scripts/cmake/doctest.cmake)
+include(${PROJECT_SOURCE_DIR}/vendor/doctest/scripts/cmake/doctest.cmake)
 
 add_executable(
 	sapeaob-test
 	test-aob.cpp
+    test-pattern.cpp 
+	test-utils.hpp
+)
+
+target_include_directories(
+	sapeaob-test PRIVATE .
 )
 
 target_link_libraries(
