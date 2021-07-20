@@ -31,8 +31,7 @@ TEST_CASE("Scan vector") {
 TEST_CASE("Pattern not found") {
   std::uint8_t test_arr[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xFF};
   pattern<0xAA, ANY, 0xFE> p{};
-  std::uintptr_t result = p.scan_match(test_arr, sizeof(test_arr));
-  REQUIRE_FALSE(result);
+  CHECK_THROWS_AS(p.scan_match(test_arr, sizeof(test_arr)), pattern_not_found);
 }
 
 TEST_CASE("README example") {
@@ -47,4 +46,11 @@ TEST_CASE("README example") {
   std::uint8_t test_arr2[] = {0xCC, 0xFF, 0xAA, 0xEE, 0xCC};
   result = p.scan_match(test_arr2, sizeof(test_arr2));
   CHECK(result == reinterpret_cast<std::uintptr_t>(test_arr2 + 2));
+}
+
+TEST_CASE("Pattern is at the beginning") {
+  std::uint8_t test_arr[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xFF};
+  pattern<0xAA, ANY, 0xCC> p{};
+  std::uintptr_t result = p.scan_match(test_arr, sizeof(test_arr));
+  CHECK(result == reinterpret_cast<std::uintptr_t>(test_arr));
 }

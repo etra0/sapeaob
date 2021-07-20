@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sapeaob/errors.hpp>
 
 namespace sapeaob {
 
@@ -34,25 +35,34 @@ private:
 template <std::uint16_t... PAT> struct pattern {
   explicit pattern(){};
 
+  template <class it> std::size_t scan_match_offset(it arr, std::size_t size);
   template <class it> std::uintptr_t scan_match(it arr, std::size_t size);
 };
 
 template <std::uint16_t... PAT>
 template <class it>
-std::uintptr_t pattern<PAT...>::scan_match(it arr, std::size_t size) {
+std::size_t pattern<PAT...>::scan_match_offset(it arr, std::size_t size) {
   std::size_t offset = 0;
   constexpr std::size_t pattern_size = sizeof...(PAT);
 
   while (offset + pattern_size <= size) {
     if (function_compare<PAT...>::compare(arr + offset)) {
-      std::uintptr_t res = reinterpret_cast<std::uintptr_t>(
-          static_cast<std::uint8_t *>(&*(arr + offset)));
-      return res;
+      return offset;
     }
     offset++;
   };
 
-  return 0;
+  throw pattern_not_found();
+}
+
+template <std::uint16_t... PAT>
+template <class it>
+std::uintptr_t pattern<PAT...>::scan_match(it arr, std::size_t size) {
+  std::uintptr_t result = 0;
+
+  std::uintptr_t arr_ptr = reinterpret_cast<std::uintptr_t>(&arr[0]);
+  std::size_t offset = this->scan_match_offset(arr, size);
+  return arr_ptr + offset;
 }
 
 } // namespace sapeaob
