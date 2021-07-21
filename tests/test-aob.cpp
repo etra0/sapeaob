@@ -8,8 +8,10 @@ TEST_CASE("check first byte is correct") {
   CHECK(function_compare<0xAA, 0xBB, 0xCC>::compare(test_arr));
   CHECK(function_compare<0xBB, 0xCC, 0xDD>::compare(test_arr + 1));
 
-  // This one should fail.
-  REQUIRE_FALSE(function_compare<0xAA, 0xBB, 0xAA>::compare(test_arr));
+  SUBCASE("Incorrect pattern") {
+    // This one should fail.
+    REQUIRE_FALSE(function_compare<0xAA, 0xBB, 0xAA>::compare(test_arr));
+  }
 }
 
 TEST_CASE("check aob with vector class") {
