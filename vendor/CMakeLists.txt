@@ -1,9 +1,9 @@
 cmake_minimum_required (VERSION 3.8)
 
-if (BUILD_TESTING)
+if (SAPEAOB_BUILD_TESTING)
 	include(doctest.cmake)
 endif()
 
-if (BUILD_BENCHMARK)
+if (SAPEAOB_BUILD_BENCHMARK)
 	include(benchmark.cmake)
 endif()

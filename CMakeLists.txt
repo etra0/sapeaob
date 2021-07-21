@@ -7,12 +7,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 add_subdirectory(src)
 add_subdirectory(vendor)
 
-if(BUILD_TESTING)
+option(SAPEAOB_BUILD_TESTING ON)
+option(SAPEAOB_BUILD_BENCHMARK OFF)
+
+if(SAPEAOB_BUILD_TESTING)
 	include(CTest)
 	add_subdirectory(tests)
 endif()
 
-if (BUILD_BENCHMARK)
+if (SAPEAOB_BUILD_BENCHMARK)
   add_subdirectory(benchmark)
 endif()
 
