@@ -48,9 +48,14 @@ TEST_CASE("README example") {
   CHECK(result == reinterpret_cast<std::uintptr_t>(test_arr2 + 2));
 }
 
-TEST_CASE("Pattern is at the beginning") {
-  std::uint8_t test_arr[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xFF};
-  pattern<0xAA, ANY, 0xCC> p{};
-  std::uintptr_t result = p.scan_match(test_arr, sizeof(test_arr));
-  CHECK(result == reinterpret_cast<std::uintptr_t>(test_arr));
+TEST_CASE("Find all matches") {
+  std::uint8_t test_arr[] = {0xAA, 0xBB, 0xAA, 0xDD, 0xAA, 0xFF, 0xAA};
+  pattern<0xAA, ANY, 0xAA> p;
+  std::vector<std::uintptr_t> result =
+      p.find_all_matches(test_arr, sizeof(test_arr));
+
+  CHECK(result.size() == 3);
+  CHECK(result[0] == reinterpret_cast<std::uintptr_t>(test_arr));
+  CHECK(result[1] == reinterpret_cast<std::uintptr_t>(test_arr + 2));
+  CHECK(result[2] == reinterpret_cast<std::uintptr_t>(test_arr + 4));
 }
