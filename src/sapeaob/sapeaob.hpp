@@ -17,7 +17,7 @@ private:
   template <class it, std::size_t... Indexes>
   static inline constexpr bool
   compare_(it arr, std::index_sequence<Indexes...>) noexcept {
-    return (... && compare_one_<it, Pattern>(arr, Indexes));
+    return (... | compare_one_<it, Pattern>(arr, Indexes)) == 0;
   }
 
   template <class it, std::uint16_t Byte>
@@ -25,8 +25,8 @@ private:
     constexpr const std::uint8_t val = Byte & 0xFF;
     // TODO: Find how to use a better constraint.
     static_assert(Byte < 0x101, "You can only use values of size 1");
-    constexpr std::uint8_t skip = (Byte & ANY) != 0;
-    return skip || (*(arr + offset) == val);
+    constexpr std::uint8_t skip = (Byte & ANY) == 0 ? 0xFF : 0x00;
+    return skip & (*(arr + offset) ^ val);
   }
 };
 
