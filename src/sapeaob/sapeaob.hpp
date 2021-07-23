@@ -7,39 +7,6 @@
 namespace sapeaob {
 
 namespace impl {
-
-template <std::uint16_t...> struct function_compare;
-
-
-template <> struct function_compare<> {
-  template <class it> constexpr static bool compare(it arr) = delete;
-
-  template <class it>
-  static constexpr bool compare_(it arr, std::size_t offset) {
-    return true;
-  };
-};
-
-template <std::uint16_t FirstByte, std::uint16_t... Rest>
-struct function_compare<FirstByte, Rest...> {
-  template <class it> constexpr static bool compare(it arr) {
-    return function_compare<FirstByte, Rest...>::compare_(arr, 0);
-  }
-
-//private:
-  template <class it>
-  static constexpr bool compare_(it arr, std::size_t offset) {
-    constexpr const std::uint8_t val = FirstByte & 0xFF;
-    // TODO: Find how to use a better constraint.
-    static_assert(FirstByte < 0x101, "You can only use values of size 1");
-    if constexpr ((FirstByte & ANY) != 0) {
-      return function_compare<Rest...>::compare_(arr, offset + 1);
-    }
-    return *(arr + offset) == val &&
-           function_compare<Rest...>::compare_(arr, offset + 1);
-  }
-};
-
 // step_calculator takes the first byte of the pattern and creates a
 // std::uint64_t type out of it by repeating this byte. Then, it checks if that
 // exact byte is in a 8-byte lookup. In the case it is, it'll return the index
@@ -80,11 +47,120 @@ static std::optional<unsigned long> find_index(std::uint64_t x) {
   }
   return std::nullopt;
 }
+
+
+template <std::uint16_t...> struct function_compare;
+
+template <std::uint16_t B0, std::uint16_t B1, std::uint16_t B2,
+          std::uint16_t B3, std::uint16_t B4, std::uint16_t B5,
+          std::uint16_t B6, std::uint16_t B7, std::uint16_t... Rest>
+struct function_compare<B0, B1, B2, B3, B4, B5, B6, B7, Rest...> {
+  template <class it> constexpr static bool compare(it arr) {
+    return function_compare<B0, B1, B2, B3, B4, B5, B6, B7>::compare_(arr, 0) &&
+           function_compare<Rest...>::compare_(arr, 8);
+  }
+
+  template <class it>
+  constexpr static bool compare_(it arr, std::size_t offset) {
+    constexpr std::uint8_t v0 = is_any(B0);
+    constexpr std::uint8_t v1 = is_any(B1);
+    constexpr std::uint8_t v2 = is_any(B2);
+    constexpr std::uint8_t v3 = is_any(B3);
+    constexpr std::uint8_t v4 = is_any(B4);
+    constexpr std::uint8_t v5 = is_any(B5);
+    constexpr std::uint8_t v6 = is_any(B6);
+    constexpr std::uint8_t v7 = is_any(B7);
+    constexpr std::uint32_t mask_first = make_u32(v7, v6, v5, v4);
+    constexpr std::uint32_t mask_last = make_u32(v3, v2, v1, v0);
+    constexpr std::uint64_t mask = ((std::uint64_t)mask_first << 32) | (std::uint64_t)mask_last;
+    constexpr std::uint32_t v_first =
+        make_u32((B7 & 0xFF), (B6 & 0xFF), (B5 & 0xFF), (B4 & 0xFF));
+    constexpr std::uint32_t v_last =
+        make_u32((B3 & 0xFF), (B2 & 0xFF), (B1 & 0xFF), (B0 & 0xFF));
+    constexpr std::uint64_t v = ((std::uint64_t)v_first << 32) | (std::uint64_t)v_last;
+    std::uint64_t target = *reinterpret_cast<std::uint64_t *>(&*(arr + offset));
+    return ((v ^ target) & mask) == 0 &&
+           function_compare<Rest...>::compare_(arr, offset + 8);
+  }
+};
+
+template <std::uint16_t B0, std::uint16_t B1, std::uint16_t B2,
+          std::uint16_t B3, std::uint16_t... Rest>
+struct function_compare<B0, B1, B2, B3, Rest...> {
+  template <class it> constexpr static bool compare(it arr) {
+    return function_compare<B0, B1, B2, B3>::compare_(arr, 0) &&
+           function_compare<Rest...>::compare_(arr, 4);
+  }
+
+  template <class it>
+  constexpr static bool compare_(it arr, std::size_t offset) {
+    constexpr std::uint8_t v0 = is_any(B0);
+    constexpr std::uint8_t v1 = is_any(B1);
+    constexpr std::uint8_t v2 = is_any(B2);
+    constexpr std::uint8_t v3 = is_any(B3);
+    constexpr std::uint32_t mask = make_u32(v3, v2, v1, v0);
+    constexpr std::uint32_t v =
+        make_u32((B3 & 0xFF), (B2 & 0xFF), (B1 & 0xFF), (B0 & 0xFF));
+    std::uint32_t target = *reinterpret_cast<std::uint32_t *>(&*(arr + offset));
+    return ((v ^ target) & mask) == 0 &&
+           function_compare<Rest...>::compare_(arr, offset + 4);
+  }
+};
+
+template <std::uint16_t B0, std::uint16_t B1, std::uint16_t... Rest>
+struct function_compare<B0, B1, Rest...> {
+  template <class it> constexpr static bool compare(it arr) {
+    return function_compare<B0, B1>::compare_(arr, 0) &&
+           function_compare<Rest...>::compare_(arr, 2);
+  }
+
+  template <class it>
+  constexpr static bool compare_(it arr, std::size_t offset) {
+    constexpr std::uint8_t v0 = is_any(B0);
+    constexpr std::uint8_t v1 = is_any(B1);
+    constexpr std::uint16_t mask = make_u32(0, 0, v1, v0);
+    constexpr std::uint16_t v = make_u32(0, 0, (B1 & 0xFF), (B0 & 0xFF));
+    std::uint16_t target = *reinterpret_cast<std::uint16_t *>(&*(arr + offset));
+    return ((v ^ target) & mask) == 0 &&
+           function_compare<Rest...>::compare_(arr, offset + 2);
+  }
+};
+
+template <std::uint16_t B0> struct function_compare<B0> {
+  template <class it> constexpr static bool compare(it arr) {
+    return function_compare<B0>::compare_(arr, 0);
+  }
+
+  template <class it>
+  static constexpr bool compare_(it arr, std::size_t offset) {
+    constexpr std::uint8_t v0 = is_any(B0);
+    return ((B0 ^ *(arr + offset)) & v0) == 0;
+  }
+};
+
+template <> struct function_compare<> {
+  template <class it> constexpr static bool compare(it arr) = delete;
+
+  template <class it>
+  static constexpr bool compare_(it arr, std::size_t offset) {
+    return true;
+  };
+};
 } // namespace impl
 
 enum op : std::uint16_t {
   ANY = 0x100,
 };
+
+constexpr std::uint8_t is_any(std::uint16_t v) {
+  return (v & ANY) != 0 ? 0 : 0xFF;
+}
+
+constexpr std::uint32_t make_u32(std::uint8_t a, std::uint8_t b, std::uint8_t c,
+                                 std::uint8_t d) {
+  return (a << 24) | (b << 16) | (c << 8) | d;
+}
+
 
 template <std::uint16_t... Pattern> struct pattern {
   explicit pattern(){};
