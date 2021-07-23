@@ -8,33 +8,35 @@ namespace sapeaob {
 
 namespace impl {
 
-// Function factory which takes a pattern and creates a function which is a long
-// concatenation of logical AND in order to check if the array is equal to the
-// pattern. It doesn't has any size check so if you go out of bounds it will
-// most likely crash. Should be use for internal stuff mostly.
-template <std::uint16_t... Pattern> struct function_compare {
+template <std::uint16_t...> struct function_compare;
+
+
+template <> struct function_compare<> {
+  template <class it> constexpr static bool compare(it arr) = delete;
+
+  template <class it>
+  static constexpr bool compare_(it arr, std::size_t offset) {
+    return true;
+  };
+};
+
+template <std::uint16_t FirstByte, std::uint16_t... Rest>
+struct function_compare<FirstByte, Rest...> {
   template <class it> constexpr static bool compare(it arr) {
-    return function_compare::compare_<it>(
-        arr, std::make_index_sequence<sizeof...(Pattern)>());
+    return function_compare<FirstByte, Rest...>::compare_(arr, 0);
   }
 
-private:
-  template <class it, std::size_t... Indexes>
-  static inline constexpr bool
-  compare_(it arr, std::index_sequence<Indexes...>) noexcept {
-    return (... && compare_one_<it, Pattern>(arr, Indexes));
-  }
-
-  // If the current byte is equal to ANY, we skip that one.
-  // We make sure we're not using any other value other than ANY that are bigger
-  // than std::uint8_t
-  template <class it, std::uint16_t Byte>
-  static constexpr std::uint8_t compare_one_(it arr, std::size_t offset) {
-    constexpr const std::uint8_t val = Byte & 0xFF;
+//private:
+  template <class it>
+  static constexpr bool compare_(it arr, std::size_t offset) {
+    constexpr const std::uint8_t val = FirstByte & 0xFF;
     // TODO: Find how to use a better constraint.
-    static_assert(Byte < 0x101, "You can only use values of size 1");
-    constexpr std::uint8_t skip = (Byte & ANY) != 0;
-    return skip || (*(arr + offset) == val);
+    static_assert(FirstByte < 0x101, "You can only use values of size 1");
+    if constexpr ((FirstByte & ANY) != 0) {
+      return function_compare<Rest...>::compare_(arr, offset + 1);
+    }
+    return *(arr + offset) == val &&
+           function_compare<Rest...>::compare_(arr, offset + 1);
   }
 };
 

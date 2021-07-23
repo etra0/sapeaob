@@ -4,6 +4,3 @@ add_library(sapeaob INTERFACE)
 
 target_include_directories(sapeaob INTERFACE .)
 
-if (MSVC)
-	target_compile_options(sapeaob INTERFACE /W3)
-endif()
