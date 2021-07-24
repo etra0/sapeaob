@@ -12,12 +12,16 @@ namespace impl {
 // exact byte is in a 8-byte lookup. In the case it is, it'll return the index
 // of that byte. When it's not, it'll return 8 since we couldn't find it
 template <class it, std::uint16_t... Pattern> class step_calculator {
+
+  template <std::uint16_t First, std::uint16_t... Rest>
+  static constexpr std::uint8_t extract_first_byte() {
+	  return First;
+  }
+
   constexpr std::uint64_t get_first_byte() {
-    int v = 0;
-    std::uint8_t first_value = (((v++ == 0 ? Pattern : 0)) | ...);
-    return utils::merge_bytes<std::uint64_t>(
-        first_value, first_value, first_value, first_value, first_value,
-        first_value, first_value, first_value);
+    constexpr std::uint8_t first_value = this->extract_first_byte<Pattern...>();
+    return utils::byte_merging<std::uint64_t, first_value, first_value, first_value, first_value, first_value,
+        first_value, first_value, first_value>::generate();
   }
 
 public:
@@ -48,7 +52,6 @@ static std::optional<unsigned long> find_index(std::uint64_t x) {
   return std::nullopt;
 }
 
-
 template <std::uint16_t...> struct function_compare;
 
 template <std::uint16_t B0, std::uint16_t B1, std::uint16_t B2,
@@ -70,14 +73,8 @@ struct function_compare<B0, B1, B2, B3, B4, B5, B6, B7, Rest...> {
     constexpr std::uint8_t v5 = is_any(B5);
     constexpr std::uint8_t v6 = is_any(B6);
     constexpr std::uint8_t v7 = is_any(B7);
-    constexpr std::uint32_t mask_first = make_u32(v7, v6, v5, v4);
-    constexpr std::uint32_t mask_last = make_u32(v3, v2, v1, v0);
-    constexpr std::uint64_t mask = ((std::uint64_t)mask_first << 32) | (std::uint64_t)mask_last;
-    constexpr std::uint32_t v_first =
-        make_u32((B7 & 0xFF), (B6 & 0xFF), (B5 & 0xFF), (B4 & 0xFF));
-    constexpr std::uint32_t v_last =
-        make_u32((B3 & 0xFF), (B2 & 0xFF), (B1 & 0xFF), (B0 & 0xFF));
-    constexpr std::uint64_t v = ((std::uint64_t)v_first << 32) | (std::uint64_t)v_last;
+    constexpr std::uint64_t mask = utils::byte_merging<std::uint64_t, v0, v1, v2, v3, v4, v5, v6, v7>::generate();
+    constexpr std::uint64_t v = utils::byte_merging<std::uint64_t, (B0 & 0xFF), (B1 & 0xFF), (B2 & 0xFF), (B3 & 0xFF), (B4 & 0xFF), (B5 & 0xFF), (B6 & 0xFF), (B7 & 0xFF)>::generate();
     std::uint64_t target = *reinterpret_cast<std::uint64_t *>(&*(arr + offset));
     return ((v ^ target) & mask) == 0 &&
            function_compare<Rest...>::compare_(arr, offset + 8);
@@ -98,9 +95,9 @@ struct function_compare<B0, B1, B2, B3, Rest...> {
     constexpr std::uint8_t v1 = is_any(B1);
     constexpr std::uint8_t v2 = is_any(B2);
     constexpr std::uint8_t v3 = is_any(B3);
-    constexpr std::uint32_t mask = make_u32(v3, v2, v1, v0);
+    constexpr std::uint32_t mask = utils::byte_merging<std::uint32_t, v0, v1, v2, v3>::generate();
     constexpr std::uint32_t v =
-        make_u32((B3 & 0xFF), (B2 & 0xFF), (B1 & 0xFF), (B0 & 0xFF));
+        utils::byte_merging<std::uint32_t, (B0 & 0xFF), (B1 & 0xFF), (B2 & 0xFF), (B3 & 0xFF)>::generate();
     std::uint32_t target = *reinterpret_cast<std::uint32_t *>(&*(arr + offset));
     return ((v ^ target) & mask) == 0 &&
            function_compare<Rest...>::compare_(arr, offset + 4);
@@ -118,8 +115,8 @@ struct function_compare<B0, B1, Rest...> {
   constexpr static bool compare_(it arr, std::size_t offset) {
     constexpr std::uint8_t v0 = is_any(B0);
     constexpr std::uint8_t v1 = is_any(B1);
-    constexpr std::uint16_t mask = make_u32(0, 0, v1, v0);
-    constexpr std::uint16_t v = make_u32(0, 0, (B1 & 0xFF), (B0 & 0xFF));
+    constexpr std::uint16_t mask = utils::byte_merging<std::uint16_t, v0, v1>::generate();
+    constexpr std::uint16_t v = utils::byte_merging<std::uint16_t, (B0 & 0xFF), (B1 & 0xFF)>::generate();
     std::uint16_t target = *reinterpret_cast<std::uint16_t *>(&*(arr + offset));
     return ((v ^ target) & mask) == 0 &&
            function_compare<Rest...>::compare_(arr, offset + 2);

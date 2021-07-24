@@ -1,6 +1,9 @@
 #include <cstdint>
 #include <utility>
 
+#ifndef SAPEAOB_UTILS
+#define SAPEAOB_UTILS
+
 namespace sapeaob {
 namespace utils {
 
@@ -30,3 +33,5 @@ private:
 
 } // namespace utils
 } // namespace sapeaob
+
+#endif // !SAPEAOB_UTILS
