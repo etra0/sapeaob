@@ -68,8 +68,6 @@ std::size_t pattern<Pattern...>::scan_match_offset(it arr, std::size_t size,
 template <std::uint16_t... Pattern>
 template <class it>
 std::uintptr_t pattern<Pattern...>::scan_match(it arr, std::size_t size) {
-  std::uintptr_t result = 0;
-
   std::uintptr_t arr_ptr = reinterpret_cast<std::uintptr_t>(&arr[0]);
   std::size_t offset = this->scan_match_offset(arr, size);
   return arr_ptr + offset;
