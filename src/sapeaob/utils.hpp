@@ -1,27 +1,32 @@
 #include <cstdint>
-#include <emmintrin.h>
-#include <smmintrin.h>
 #include <utility>
-
-#ifndef SAPEAOB_UTILS
-#define SAPEAOB_UTILS
 
 namespace sapeaob {
 namespace utils {
 
-template <typename TargetType, class... Items>
-constexpr TargetType merge_bytes(Items... items) {
-  int pos = 0;
-  TargetType result = 0;
-  if constexpr (sizeof...(Items) != sizeof(TargetType)) {
-    throw size_error();
-  }
-  ((result |= static_cast<TargetType>(items) << (8 * pos++)), ...);
+template <typename TargetType, std::uint8_t... Bytes> struct byte_merging {
+  byte_merging() = delete;
 
-  return result;
-}
+  constexpr static TargetType generate() {
+    return generate_(std::make_index_sequence<sizeof...(Bytes)>());
+  }
+
+private:
+  template <std::size_t... Indexes>
+  constexpr static TargetType generate_(std::index_sequence<Indexes...>) {
+    constexpr std::size_t number_of_bytes = sizeof...(Bytes);
+    constexpr std::size_t type_size = sizeof(TargetType);
+    if constexpr (number_of_bytes != type_size) {
+      throw size_error();
+    }
+    return (... | join_bytes<Bytes>(Indexes));
+  }
+
+  template <std::uint8_t Byte>
+  constexpr static TargetType join_bytes(std::size_t pos) noexcept {
+    return static_cast<TargetType>(Byte) << (8 * pos);
+  }
+};
 
 } // namespace utils
 } // namespace sapeaob
-
-#endif // !SAPEAOB_UTILS

@@ -1,6 +1,7 @@
 #include <vector>
 #include <doctest/doctest.h>
 #include <sapeaob/sapeaob.hpp>
+#include <sapeaob/utils.hpp>
 #include <string>
 #include <vector>
 
