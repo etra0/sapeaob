@@ -73,8 +73,11 @@ struct function_compare<B0, B1, B2, B3, B4, B5, B6, B7, Rest...> {
     constexpr std::uint8_t v5 = is_any(B5);
     constexpr std::uint8_t v6 = is_any(B6);
     constexpr std::uint8_t v7 = is_any(B7);
-    constexpr std::uint64_t mask = utils::byte_merging<std::uint64_t, v0, v1, v2, v3, v4, v5, v6, v7>::generate();
-    constexpr std::uint64_t v = utils::byte_merging<std::uint64_t, (B0 & 0xFF), (B1 & 0xFF), (B2 & 0xFF), (B3 & 0xFF), (B4 & 0xFF), (B5 & 0xFF), (B6 & 0xFF), (B7 & 0xFF)>::generate();
+    constexpr std::uint64_t mask =
+        utils::merge_bytes<std::uint64_t>(v0, v1, v2, v3, v4, v5, v6, v7);
+    constexpr std::uint64_t v = utils::merge_bytes<std::uint64_t>(
+        (B0 & 0xFF), (B1 & 0xFF), (B2 & 0xFF), (B3 & 0xFF), (B4 & 0xFF),
+        (B5 & 0xFF), (B6 & 0xFF), (B7 & 0xFF));
     std::uint64_t target = *reinterpret_cast<std::uint64_t *>(&*(arr + offset));
     return ((v ^ target) & mask) == 0 &&
            function_compare<Rest...>::compare_(arr, offset + 8);
@@ -95,9 +98,10 @@ struct function_compare<B0, B1, B2, B3, Rest...> {
     constexpr std::uint8_t v1 = is_any(B1);
     constexpr std::uint8_t v2 = is_any(B2);
     constexpr std::uint8_t v3 = is_any(B3);
-    constexpr std::uint32_t mask = utils::byte_merging<std::uint32_t, v0, v1, v2, v3>::generate();
-    constexpr std::uint32_t v =
-        utils::byte_merging<std::uint32_t, (B0 & 0xFF), (B1 & 0xFF), (B2 & 0xFF), (B3 & 0xFF)>::generate();
+    constexpr std::uint32_t mask =
+        utils::merge_bytes<std::uint32_t>(v0, v1, v2, v3);
+    constexpr std::uint32_t v = utils::merge_bytes<std::uint32_t>(
+        (B0 & 0xFF), (B1 & 0xFF), (B2 & 0xFF), (B3 & 0xFF));
     std::uint32_t target = *reinterpret_cast<std::uint32_t *>(&*(arr + offset));
     return ((v ^ target) & mask) == 0 &&
            function_compare<Rest...>::compare_(arr, offset + 4);
@@ -115,8 +119,9 @@ struct function_compare<B0, B1, Rest...> {
   constexpr static bool compare_(it arr, std::size_t offset) {
     constexpr std::uint8_t v0 = is_any(B0);
     constexpr std::uint8_t v1 = is_any(B1);
-    constexpr std::uint16_t mask = utils::byte_merging<std::uint16_t, v0, v1>::generate();
-    constexpr std::uint16_t v = utils::byte_merging<std::uint16_t, (B0 & 0xFF), (B1 & 0xFF)>::generate();
+    constexpr std::uint16_t mask = utils::merge_bytes<std::uint16_t>(v0, v1);
+    constexpr std::uint16_t v =
+        utils::merge_bytes<std::uint16_t>((B0 & 0xFF), (B1 & 0xFF));
     std::uint16_t target = *reinterpret_cast<std::uint16_t *>(&*(arr + offset));
     return ((v ^ target) & mask) == 0 &&
            function_compare<Rest...>::compare_(arr, offset + 2);
