@@ -52,6 +52,17 @@ static std::optional<unsigned long> find_index(std::uint64_t x) {
   return std::nullopt;
 }
 
+// This function generates a mask where any value that's ANY it'll be 0x00, otherwise 0xFF.
+// It can be used for different types since it's size independant.
+// For example, generate_bitmask(0xAA, ANY, 0xBB, 0xCC) would generate 0xFFFF00FF (because of endianness).
+template <class TargetType, class... B>
+constexpr TargetType generate_bitmask(B... b) { 
+  TargetType result = 0;
+  std::size_t pos = 0;
+  ((result |= static_cast<TargetType>((b & ANY) != 0 ? 0 : 0xFF) << 8 * (pos++)), ...);
+  return result;
+}
+
 template <std::uint16_t...> struct function_compare;
 
 template <std::uint16_t B0, std::uint16_t B1, std::uint16_t B2,
@@ -65,16 +76,7 @@ struct function_compare<B0, B1, B2, B3, B4, B5, B6, B7, Rest...> {
 
   template <class it>
   constexpr static bool compare_(it arr, std::size_t offset) {
-    constexpr std::uint8_t v0 = is_any(B0);
-    constexpr std::uint8_t v1 = is_any(B1);
-    constexpr std::uint8_t v2 = is_any(B2);
-    constexpr std::uint8_t v3 = is_any(B3);
-    constexpr std::uint8_t v4 = is_any(B4);
-    constexpr std::uint8_t v5 = is_any(B5);
-    constexpr std::uint8_t v6 = is_any(B6);
-    constexpr std::uint8_t v7 = is_any(B7);
-    constexpr std::uint64_t mask =
-        utils::merge_bytes<std::uint64_t>(v0, v1, v2, v3, v4, v5, v6, v7);
+    constexpr auto mask = generate_bitmask<std::uint64_t>(B0, B1, B2, B3, B4, B5, B6, B7);
     constexpr std::uint64_t v = utils::merge_bytes<std::uint64_t>(
         (B0 & 0xFF), (B1 & 0xFF), (B2 & 0xFF), (B3 & 0xFF), (B4 & 0xFF),
         (B5 & 0xFF), (B6 & 0xFF), (B7 & 0xFF));
@@ -94,12 +96,7 @@ struct function_compare<B0, B1, B2, B3, Rest...> {
 
   template <class it>
   constexpr static bool compare_(it arr, std::size_t offset) {
-    constexpr std::uint8_t v0 = is_any(B0);
-    constexpr std::uint8_t v1 = is_any(B1);
-    constexpr std::uint8_t v2 = is_any(B2);
-    constexpr std::uint8_t v3 = is_any(B3);
-    constexpr std::uint32_t mask =
-        utils::merge_bytes<std::uint32_t>(v0, v1, v2, v3);
+    constexpr auto mask = generate_bitmask<std::uint32_t>(B0, B1, B2, B3);
     constexpr std::uint32_t v = utils::merge_bytes<std::uint32_t>(
         (B0 & 0xFF), (B1 & 0xFF), (B2 & 0xFF), (B3 & 0xFF));
     std::uint32_t target = *reinterpret_cast<std::uint32_t *>(&*(arr + offset));
@@ -117,9 +114,7 @@ struct function_compare<B0, B1, Rest...> {
 
   template <class it>
   constexpr static bool compare_(it arr, std::size_t offset) {
-    constexpr std::uint8_t v0 = is_any(B0);
-    constexpr std::uint8_t v1 = is_any(B1);
-    constexpr std::uint16_t mask = utils::merge_bytes<std::uint16_t>(v0, v1);
+    constexpr std::uint16_t mask = generate_bitmask<std::uint16_t>(B0, B1);
     constexpr std::uint16_t v =
         utils::merge_bytes<std::uint16_t>((B0 & 0xFF), (B1 & 0xFF));
     std::uint16_t target = *reinterpret_cast<std::uint16_t *>(&*(arr + offset));
