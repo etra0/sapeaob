@@ -1,5 +1,7 @@
 #include <cstdint>
 #include <utility>
+#include <emmintrin.h>
+#include <smmintrin.h>
 
 #ifndef SAPEAOB_UTILS
 #define SAPEAOB_UTILS
