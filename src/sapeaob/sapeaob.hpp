@@ -81,24 +81,10 @@ struct function_compare<B0, B1, B2, B3, B4, B5, B6, B7,
 
   template <class it>
   constexpr static bool compare_(it arr, std::size_t offset) {
-    constexpr std::uint8_t v0 = is_any(B0);
-    constexpr std::uint8_t v1 = is_any(B1);
-    constexpr std::uint8_t v2 = is_any(B2);
-    constexpr std::uint8_t v3 = is_any(B3);
-    constexpr std::uint8_t v4 = is_any(B4);
-    constexpr std::uint8_t v5 = is_any(B5);
-    constexpr std::uint8_t v6 = is_any(B6);
-    constexpr std::uint8_t v7 = is_any(B7);
-    constexpr std::uint8_t v8 = is_any(B8);
-    constexpr std::uint8_t v9 = is_any(B9);
-    constexpr std::uint8_t v10 = is_any(B10);
-    constexpr std::uint8_t v11 = is_any(B11);
-    constexpr std::uint8_t v12 = is_any(B12);
-    constexpr std::uint8_t v13 = is_any(B13);
-    constexpr std::uint8_t v14 = is_any(B14);
-    constexpr std::uint8_t v15 = is_any(B15);
-    constexpr std::uint8_t maskarray[] = {v0, v1, v2,  v3,  v4,  v5,  v6,  v7,
-                                          v8, v9, v10, v11, v12, v13, v14, v15};
+    constexpr const std::uint64_t maskarray[2] = {
+      generate_bitmask<std::uint64_t>(B0, B1, B2, B3, B4, B5, B6, B7),
+      generate_bitmask<std::uint64_t>(B8, B9, B10, B11, B12, B13, B14, B15),
+    };
     constexpr std::uint8_t varray[] = {
         (B0 & 0xFF),  (B1 & 0xFF),  (B2 & 0xFF),  (B3 & 0xFF),
         (B4 & 0xFF),  (B5 & 0xFF),  (B6 & 0xFF),  (B7 & 0xFF),
