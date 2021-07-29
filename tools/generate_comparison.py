@@ -25,21 +25,19 @@ def diff(va, vb, bench, i):
 def main():
     files = filter(lambda x: x.endswith(".json"), os.listdir("builds"))
     base = parse_file("builds/00_master.json")
-    csv = "name,real_time_small_pattern,cpu_time_small_pattern,real_time_long_pattern,cpu_time_long_pattern,real_time_long_pattern_wildcard,cpu_time_long_pattern_wildcard\n"
-    fmt = "{},{},{},{},{},{},{}\n"
+    csv = "name,test,real_time,cpu_time\n"
+    fmt = "{},{},{},{}\n"
 
     for f in files:
         if f.startswith("00"):
             continue
         current_data = parse_file(os.path.join("builds", f))
-        csv += fmt.format(
-                current_data["name"],
-                diff(current_data, base, "small_pattern", 0),
-                diff(current_data, base, "small_pattern", 1),
-                diff(current_data, base, "long_pattern", 0),
-                diff(current_data, base, "long_pattern", 1),
-                diff(current_data, base, "long_pattern_wildcard", 0),
-                diff(current_data, base, "long_pattern_wildcard", 1))
+        for test in ["small_pattern", "long_pattern", "long_pattern_wildcard"]:
+            csv += fmt.format(
+                    current_data["name"],
+                    test,
+                    diff(current_data, base, test, 0),
+                    diff(current_data, base, test, 1))
     with open("output.csv", "w") as f:
         f.write(csv)
 

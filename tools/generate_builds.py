@@ -34,7 +34,7 @@ def run(commit, name):
     subprocess.run(f"git checkout {commit}".split(" "), check=True)
     shutil.rmtree(version_path, ignore_errors=True)
     os.mkdir(version_path)
-    subprocess.run(f"cmake ../.. -DCMAKE_BUILD_TYPE=Release -DSAPEAOB_BUILD_BENCHMARK=ON -GNinja".split(" "), check=True, cwd=version_path)
+    subprocess.run(f"cmake ../.. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSAPEAOB_BUILD_BENCHMARK=ON -GNinja".split(" "), check=True, cwd=version_path)
     subprocess.run(f"ninja -j12".split(" "), check=True, cwd=version_path)
     exec_name = os.path.join(".", "benchmark", f"bench-sapeaob{extension}")
     print(f"Running {exec_name}")
