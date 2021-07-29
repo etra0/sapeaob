@@ -13,15 +13,13 @@ namespace impl {
 // of that byte. When it's not, it'll return 8 since we couldn't find it
 template <class it, std::uint16_t... Pattern> class step_calculator {
 
-  template <std::uint16_t First, std::uint16_t... Rest>
-  static constexpr std::uint8_t extract_first_byte() {
-	  return First;
-  }
-
   constexpr std::uint64_t get_first_byte() {
-    constexpr std::uint8_t first_value = this->extract_first_byte<Pattern...>();
-    return utils::byte_merging<std::uint64_t, first_value, first_value, first_value, first_value, first_value,
-        first_value, first_value, first_value>::generate();
+    int v = 0;
+    std::uint8_t first_value = 0;
+    ((first_value |= v++ == 0 ? Pattern : 0), ...);
+    return utils::merge_bytes<std::uint64_t>(
+        first_value, first_value, first_value, first_value, first_value,
+        first_value, first_value, first_value);
   }
 
 public:
