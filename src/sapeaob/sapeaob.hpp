@@ -1,5 +1,8 @@
 #include <iostream>
+#include <immintrin.h>
+#include <optional>
 #include <sapeaob/errors.hpp>
+#include <sapeaob/utils.hpp>
 
 namespace sapeaob {
 
@@ -30,6 +33,43 @@ private:
   }
 };
 
+template <class it, std::uint16_t... Pattern> struct step_calculator {
+  constexpr std::uint64_t get_first_byte() {
+    int v = 0;
+    std::uint8_t first_value = (((v++ == 0 ? Pattern : 0)) | ...);
+    return utils::merge_bytes<std::uint64_t>(
+        first_value, first_value, first_value, first_value, first_value,
+        first_value, first_value, first_value);
+  }
+
+  inline std::size_t get_step(it arr, std::size_t offset, std::size_t size) {
+    if (offset + sizeof...(Pattern) + 8 <= size) {
+      std::uint64_t casted_value = *(std::uint64_t *)&*(arr + offset);
+      unsigned long step = find_index(casted_value ^ this->get_first_byte()).value_or(8);
+      return step > 0 ? step : 1;
+    } else {
+      return 1;
+    }
+  }
+};
+
+
+static std::optional<unsigned long> find_index(std::uint64_t x) {
+  using optional_long = std::optional<unsigned long>;
+  std::uint64_t y;
+  unsigned long n;
+  const std::uint64_t special_value = 0x7F7F7F7F7F7F7F7F;
+  y = (x & special_value) + special_value;
+  y = ~(y | x | special_value);
+  char result = _BitScanForward64(&n, y);
+  n >>= 3;
+  if (result != 0 && n <= 7) {
+    return optional_long{n};
+  }
+  return std::nullopt;
+}
+
+
 template <std::uint16_t... Pattern> struct pattern {
   explicit pattern(){};
 
@@ -54,12 +94,16 @@ template <class it>
 std::size_t pattern<Pattern...>::scan_match_offset(it arr, std::size_t size,
                                                std::size_t offset) {
   constexpr std::size_t pattern_size = sizeof...(Pattern);
+  int v = 0;
+  step_calculator<it, Pattern...> sc;
+  
 
   while (offset + pattern_size <= size) {
     if (function_compare<Pattern...>::compare(arr + offset)) {
       return offset;
     }
-    offset++;
+    offset += sc.get_step(arr, offset, size);
+    
   };
 
   throw pattern_not_found();

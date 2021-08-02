@@ -2,6 +2,33 @@
 
 using namespace sapeaob;
 
+TEST_CASE("Find right-most index") {
+  std::optional<unsigned long> result = find_index(0xCCEEAAFFAABBCCDD ^ 0xCCCCCCCCCCCCCCCC);
+
+  CHECK(result == 1);
+
+  result = find_index(0xCCEEAAFFAACCFFDD ^ 0xCCCCCCCCCCCCCCCC);
+  CHECK(result == 2);
+
+  result = find_index(0xCCEEAAFFCCBBAADD ^ 0xCCCCCCCCCCCCCCCC);
+  CHECK(result == 3);
+
+  result = find_index(0xCCEEAACCAABBAADD ^ 0xCCCCCCCCCCCCCCCC);
+  CHECK(result == 4);
+
+  result = find_index(0xCCEEAACAAABBAADD ^ 0xCCCCCCCCCCCCCCCC);
+  CHECK(result == 7);
+
+  result = find_index(0xCCCCAACAAABBAADD ^ 0xCCCCCCCCCCCCCCCC);
+  CHECK(result == 6);
+
+  result = find_index(0xCACCAACAAABBAACC ^ 0xCCCCCCCCCCCCCCCC);
+  CHECK(result == 0);
+
+  result = find_index(0xCACAAACAAABBAACA ^ 0xCCCCCCCCCCCCCCCC);
+  CHECK(result == std::nullopt);
+}
+
 TEST_CASE("check first byte is correct") {
 
   std::uint8_t test_arr[] = {0xAA, 0xBB, 0xCC, 0xDD};
