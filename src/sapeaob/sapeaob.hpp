@@ -68,13 +68,12 @@ template <std::uint16_t B0, std::uint16_t B1, std::uint16_t B2,
           std::uint16_t B6, std::uint16_t B7, std::uint16_t B8,
           std::uint16_t B9, std::uint16_t B10, std::uint16_t B11,
           std::uint16_t B12, std::uint16_t B13, std::uint16_t B14,
-          std::uint16_t B15, std::uint16_t... Rest>
+          std::uint16_t B15>
 struct function_compare<B0, B1, B2, B3, B4, B5, B6, B7,
-  B8, B9, B10, B11, B12, B13, B14, B15, Rest...> {
+  B8, B9, B10, B11, B12, B13, B14, B15> {
   template <class it> constexpr static bool compare(it arr) {
     return function_compare<B0, B1, B2, B3, B4, B5, B6, B7, 
-    B8, B9, B10, B11, B12, B13, B14, B15>::compare_(arr, 0) &&
-           function_compare<Rest...>::compare_(arr, 16);
+    B8, B9, B10, B11, B12, B13, B14, B15>::compare_(arr, 0);
   }
 
   template <class it>
@@ -83,29 +82,29 @@ struct function_compare<B0, B1, B2, B3, B4, B5, B6, B7,
       generate_bitmask<std::uint64_t>(B0, B1, B2, B3, B4, B5, B6, B7),
       generate_bitmask<std::uint64_t>(B8, B9, B10, B11, B12, B13, B14, B15),
     };
-    constexpr std::uint8_t varray[] = {
-        (B0 & 0xFF),  (B1 & 0xFF),  (B2 & 0xFF),  (B3 & 0xFF),
-        (B4 & 0xFF),  (B5 & 0xFF),  (B6 & 0xFF),  (B7 & 0xFF),
-        (B8 & 0xFF),  (B9 & 0xFF),  (B10 & 0xFF), (B11 & 0xFF),
-        (B12 & 0xFF), (B13 & 0xFF), (B14 & 0xFF), (B15 & 0xFF)};
+    constexpr std::uint64_t varray[] = {
+        utils::merge_bytes<std::uint64_t>((B0 & 0xFF), (B1 & 0xFF), (B2 & 0xFF),
+                                          (B3 & 0xFF), (B4 & 0xFF), (B5 & 0xFF),
+                                          (B6 & 0xFF), (B7 & 0xFF)),
+        utils::merge_bytes<std::uint64_t>(
+            (B8 & 0xFF), (B9 & 0xFF), (B10 & 0xFF), (B11 & 0xFF), (B12 & 0xFF),
+            (B13 & 0xFF), (B14 & 0xFF), (B15 & 0xFF))};
 
     __m128i v = _mm_load_si128((const __m128i *)&varray[0]);
     __m128i mask = _mm_load_si128((const __m128i *)&maskarray[0]);
     __m128i target = _mm_loadu_si128((const __m128i *)&*(arr + offset));
     __m128i xored = _mm_xor_si128(v, target);
     int result = _mm_test_all_zeros(xored, mask);
-    return result &&
-           function_compare<Rest...>::compare_(arr, offset + 16);
+    return result;
   }
 };
 
 template <std::uint16_t B0, std::uint16_t B1, std::uint16_t B2,
           std::uint16_t B3, std::uint16_t B4, std::uint16_t B5,
-          std::uint16_t B6, std::uint16_t B7, std::uint16_t... Rest>
-struct function_compare<B0, B1, B2, B3, B4, B5, B6, B7, Rest...> {
+          std::uint16_t B6, std::uint16_t B7>
+struct function_compare<B0, B1, B2, B3, B4, B5, B6, B7> {
   template <class it> constexpr static bool compare(it arr) {
-    return function_compare<B0, B1, B2, B3, B4, B5, B6, B7>::compare_(arr, 0) &&
-           function_compare<Rest...>::compare_(arr, 8);
+    return function_compare<B0, B1, B2, B3, B4, B5, B6, B7>::compare_(arr, 0);
   }
 
   template <class it>
@@ -115,17 +114,15 @@ struct function_compare<B0, B1, B2, B3, B4, B5, B6, B7, Rest...> {
         (B0 & 0xFF), (B1 & 0xFF), (B2 & 0xFF), (B3 & 0xFF), (B4 & 0xFF),
         (B5 & 0xFF), (B6 & 0xFF), (B7 & 0xFF));
     std::uint64_t target = *reinterpret_cast<std::uint64_t *>(&*(arr + offset));
-    return ((v ^ target) & mask) == 0 &&
-           function_compare<Rest...>::compare_(arr, offset + 8);
+    return ((v ^ target) & mask) == 0;
   }
 };
 
 template <std::uint16_t B0, std::uint16_t B1, std::uint16_t B2,
-          std::uint16_t B3, std::uint16_t... Rest>
-struct function_compare<B0, B1, B2, B3, Rest...> {
+          std::uint16_t B3>
+struct function_compare<B0, B1, B2, B3> {
   template <class it> constexpr static bool compare(it arr) {
-    return function_compare<B0, B1, B2, B3>::compare_(arr, 0) &&
-           function_compare<Rest...>::compare_(arr, 4);
+    return function_compare<B0, B1, B2, B3>::compare_(arr, 0);
   }
 
   template <class it>
@@ -134,16 +131,14 @@ struct function_compare<B0, B1, B2, B3, Rest...> {
     constexpr std::uint32_t v = utils::merge_bytes<std::uint32_t>(
         (B0 & 0xFF), (B1 & 0xFF), (B2 & 0xFF), (B3 & 0xFF));
     std::uint32_t target = *reinterpret_cast<std::uint32_t *>(&*(arr + offset));
-    return ((v ^ target) & mask) == 0 &&
-           function_compare<Rest...>::compare_(arr, offset + 4);
+    return ((v ^ target) & mask) == 0;
   }
 };
 
-template <std::uint16_t B0, std::uint16_t B1, std::uint16_t... Rest>
-struct function_compare<B0, B1, Rest...> {
+template <std::uint16_t B0, std::uint16_t B1>
+struct function_compare<B0, B1> {
   template <class it> constexpr static bool compare(it arr) {
-    return function_compare<B0, B1>::compare_(arr, 0) &&
-           function_compare<Rest...>::compare_(arr, 2);
+    return function_compare<B0, B1>::compare_(arr, 0);
   }
 
   template <class it>
@@ -152,20 +147,22 @@ struct function_compare<B0, B1, Rest...> {
     constexpr std::uint16_t v =
         utils::merge_bytes<std::uint16_t>((B0 & 0xFF), (B1 & 0xFF));
     std::uint16_t target = *reinterpret_cast<std::uint16_t *>(&*(arr + offset));
-    return ((v ^ target) & mask) == 0 &&
-           function_compare<Rest...>::compare_(arr, offset + 2);
+    return ((v ^ target) & mask) == 0;
   }
 };
 
-template <std::uint16_t B0> struct function_compare<B0> {
+template <std::uint16_t B0, std::uint16_t... Rest>
+struct function_compare<B0, Rest...> {
   template <class it> constexpr static bool compare(it arr) {
-    return function_compare<B0>::compare_(arr, 0);
+    return function_compare<B0>::compare_(arr, 0) &&
+           function_compare<Rest...>::compare_(arr, 1);
   }
 
   template <class it>
   static constexpr bool compare_(it arr, std::size_t offset) {
-    constexpr std::uint8_t v0 = is_any(B0);
-    return ((B0 ^ *(arr + offset)) & v0) == 0;
+    if constexpr ((B0 & ANY) != 0)
+      return function_compare<Rest...>::compare_(arr, offset + 1);
+    return B0 == *(arr + offset) && function_compare<Rest...>::compare_(arr, offset + 1);
   }
 };
 
@@ -208,7 +205,7 @@ private:
 
 template <std::uint16_t... Pattern>
 template <class it>
-std::size_t pattern<Pattern...>::scan_match_offset(it arr, std::size_t size) {
+inline std::size_t pattern<Pattern...>::scan_match_offset(it arr, std::size_t size) {
   return this->scan_match_offset(arr, size, 0);
 }
 
