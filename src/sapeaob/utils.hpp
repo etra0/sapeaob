@@ -1,7 +1,7 @@
 #include <cstdint>
-#include <utility>
 #include <emmintrin.h>
 #include <smmintrin.h>
+#include <utility>
 
 #ifndef SAPEAOB_UTILS
 #define SAPEAOB_UTILS

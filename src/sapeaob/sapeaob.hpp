@@ -1,15 +1,17 @@
-#include <iostream>
 #include <immintrin.h>
+#include <iostream>
 #include <optional>
 #include <sapeaob/errors.hpp>
 #include <sapeaob/utils.hpp>
 
 namespace sapeaob {
 
-enum op : std::uint16_t {
-  ANY = 0x100,
-};
+namespace impl {
 
+// Function factory which takes a pattern and creates a function which is a long
+// concatenation of logical AND in order to check if the array is equal to the
+// pattern. It doesn't has any size check so if you go out of bounds it will
+// most likely crash. Should be use for internal stuff mostly.
 template <std::uint16_t... Pattern> struct function_compare {
   template <class it> constexpr static bool compare(it arr) {
     return function_compare::compare_<it>(
@@ -23,6 +25,9 @@ private:
     return (... && compare_one_<it, Pattern>(arr, Indexes));
   }
 
+  // If the current byte is equal to ANY, we skip that one.
+  // We make sure we're not using any other value other than ANY that are bigger
+  // than std::uint8_t
   template <class it, std::uint16_t Byte>
   static constexpr std::uint8_t compare_one_(it arr, std::size_t offset) {
     constexpr const std::uint8_t val = Byte & 0xFF;
@@ -33,7 +38,11 @@ private:
   }
 };
 
-template <class it, std::uint16_t... Pattern> struct step_calculator {
+// step_calculator takes the first byte of the pattern and creates a
+// std::uint64_t type out of it by repeating this byte. Then, it checks if that
+// exact byte is in a 8-byte lookup. In the case it is, it'll return the index
+// of that byte. When it's not, it'll return 8 since we couldn't find it
+template <class it, std::uint16_t... Pattern> class step_calculator {
   constexpr std::uint64_t get_first_byte() {
     int v = 0;
     std::uint8_t first_value = (((v++ == 0 ? Pattern : 0)) | ...);
@@ -42,17 +51,18 @@ template <class it, std::uint16_t... Pattern> struct step_calculator {
         first_value, first_value, first_value);
   }
 
+public:
   inline std::size_t get_step(it arr, std::size_t offset, std::size_t size) {
     if (offset + sizeof...(Pattern) + 8 <= size) {
       std::uint64_t casted_value = *(std::uint64_t *)&*(arr + offset);
-      unsigned long step = find_index(casted_value ^ this->get_first_byte()).value_or(8);
+      unsigned long step =
+          find_index(casted_value ^ this->get_first_byte()).value_or(8);
       return step > 0 ? step : 1;
     } else {
       return 1;
     }
   }
 };
-
 
 static std::optional<unsigned long> find_index(std::uint64_t x) {
   using optional_long = std::optional<unsigned long>;
@@ -68,7 +78,11 @@ static std::optional<unsigned long> find_index(std::uint64_t x) {
   }
   return std::nullopt;
 }
+} // namespace impl
 
+enum op : std::uint16_t {
+  ANY = 0x100,
+};
 
 template <std::uint16_t... Pattern> struct pattern {
   explicit pattern(){};
@@ -92,18 +106,16 @@ std::size_t pattern<Pattern...>::scan_match_offset(it arr, std::size_t size) {
 template <std::uint16_t... Pattern>
 template <class it>
 std::size_t pattern<Pattern...>::scan_match_offset(it arr, std::size_t size,
-                                               std::size_t offset) {
+                                                   std::size_t offset) {
   constexpr std::size_t pattern_size = sizeof...(Pattern);
   int v = 0;
-  step_calculator<it, Pattern...> sc;
-  
+  impl::step_calculator<it, Pattern...> sc;
 
   while (offset + pattern_size <= size) {
-    if (function_compare<Pattern...>::compare(arr + offset)) {
+    if (impl::function_compare<Pattern...>::compare(arr + offset)) {
       return offset;
     }
     offset += sc.get_step(arr, offset, size);
-    
   };
 
   throw pattern_not_found();
