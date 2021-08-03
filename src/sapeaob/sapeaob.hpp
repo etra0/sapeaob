@@ -43,7 +43,7 @@ private:
 };
 
 inline char bitscanfwd(unsigned long *n, unsigned long long y) {
-#if _MSVC
+#ifdef _WIN32
   return _BitScanForward64(n, y);
 #else
   if (y == 0) {
