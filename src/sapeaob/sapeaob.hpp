@@ -6,6 +6,10 @@
 
 namespace sapeaob {
 
+enum op : std::uint16_t {
+  ANY = 0x100,
+};
+
 namespace impl {
 
 // Function factory which takes a pattern and creates a function which is a long
@@ -38,25 +42,59 @@ private:
   }
 };
 
+inline char bitscanfwd(unsigned long *n, unsigned long long y) {
+#if _MSVC
+  return _BitScanForward64(n, y);
+#else
+  if (y == 0) {
+    return 0;
+  } else {
+    *n = __builtin_ctzll(y);
+    return 1;
+  }
+#endif
+}
+
+static std::optional<unsigned long> find_index(std::uint64_t x) {
+  using optional_long = std::optional<unsigned long>;
+  const std::uint64_t special_value = 0x7F7F7F7F7F7F7F7F;
+  std::uint64_t y;
+  unsigned long n;
+  y = (x & special_value) + special_value;
+  y = ~(y | x | special_value);
+  char result = bitscanfwd(&n, y);
+  n >>= 3;
+  if (result != 0 && n <= 7) {
+    return optional_long{n};
+  }
+  return std::nullopt;
+}
+
 // step_calculator takes the first byte of the pattern and creates a
 // std::uint64_t type out of it by repeating this byte. Then, it checks if that
 // exact byte is in a 8-byte lookup. In the case it is, it'll return the index
 // of that byte. When it's not, it'll return 8 since we couldn't find it
 template <class it, std::uint16_t... Pattern> class step_calculator {
-  constexpr std::uint64_t get_first_byte() {
-    int v = 0;
-    std::uint8_t first_value = (((v++ == 0 ? Pattern : 0)) | ...);
+  template <class First, class... Items>
+  static constexpr std::uint8_t get_first_byte(First first, Items... _) {
+    return first & 0xFF;
+  }
+
+  constexpr std::uint64_t spray_first_byte() {
+    std::uint8_t first_value = this->get_first_byte(Pattern...);
     return utils::merge_bytes<std::uint64_t>(
         first_value, first_value, first_value, first_value, first_value,
         first_value, first_value, first_value);
   }
 
 public:
+  explicit step_calculator() {};
+
   inline std::size_t get_step(it arr, std::size_t offset, std::size_t size) {
-    if (offset + sizeof...(Pattern) + 8 <= size) {
+    if (offset + 8 <= size) {
       std::uint64_t casted_value = *(std::uint64_t *)&*(arr + offset);
       unsigned long step =
-          find_index(casted_value ^ this->get_first_byte()).value_or(8);
+          find_index(casted_value ^ this->spray_first_byte()).value_or(8);
       return step > 0 ? step : 1;
     } else {
       return 1;
@@ -64,25 +102,7 @@ public:
   }
 };
 
-static std::optional<unsigned long> find_index(std::uint64_t x) {
-  using optional_long = std::optional<unsigned long>;
-  std::uint64_t y;
-  unsigned long n;
-  const std::uint64_t special_value = 0x7F7F7F7F7F7F7F7F;
-  y = (x & special_value) + special_value;
-  y = ~(y | x | special_value);
-  char result = _BitScanForward64(&n, y);
-  n >>= 3;
-  if (result != 0 && n <= 7) {
-    return optional_long{n};
-  }
-  return std::nullopt;
-}
 } // namespace impl
-
-enum op : std::uint16_t {
-  ANY = 0x100,
-};
 
 template <std::uint16_t... Pattern> struct pattern {
   explicit pattern(){};

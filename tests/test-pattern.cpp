@@ -2,9 +2,9 @@
 using namespace sapeaob;
 
 TEST_CASE("Scan for an AOB") {
-  std::uint8_t test_arr[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xAA};
+  std::uint8_t test_arr[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xAA, 0xBB, 0x00, 0x11, 0x12};
   pattern<0xCC, 0xDD> p{};
-  std::uintptr_t result = p.scan_match(test_arr, 5);
+  std::uintptr_t result = p.scan_match(test_arr, sizeof(test_arr));
   CHECK(result == reinterpret_cast<std::uintptr_t>(&*(test_arr + 2)));
 }
 
@@ -40,6 +40,7 @@ TEST_CASE("Pattern not found") {
   pattern<0xAA, ANY, 0xFE> p{};
   CHECK_THROWS_AS(p.scan_match(test_arr, sizeof(test_arr)), pattern_not_found);
 }
+
 
 TEST_CASE("README example") {
   std::vector<std::uint8_t> test_arr{0xFF, 0xAA, 0xDF, 0xCC};

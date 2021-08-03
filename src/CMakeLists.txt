@@ -6,4 +6,6 @@ target_include_directories(sapeaob INTERFACE .)
 
 if (MSVC)
 	target_compile_options(sapeaob INTERFACE /W3)
+else()
+  target_compile_options(sapeaob INTERFACE -mavx2)
 endif()

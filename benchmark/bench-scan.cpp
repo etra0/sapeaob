@@ -12,10 +12,10 @@
 #define CHECK(result, value)                                                   \
   do {                                                                         \
     if (result == 0)                                                           \
-      throw std::exception("Result is 0");                                     \
+      throw std::runtime_error("Result is 0");                                     \
     std::uint32_t v = *reinterpret_cast<std::uint32_t *>(result);                \
     if (v != value)                                                            \
-      throw std::exception("Value is incorrect");                              \
+      throw std::runtime_error("Value is incorrect");                              \
   } while (false)
 
 namespace sapeaob {

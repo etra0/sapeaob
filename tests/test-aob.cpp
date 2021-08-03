@@ -5,7 +5,6 @@ using namespace sapeaob;
 TEST_CASE("Find right-most index") {
   std::optional<unsigned long> result =
       impl::find_index(0xCCEEAAFFAABBCCDD ^ 0xCCCCCCCCCCCCCCCC);
-
   CHECK(result == 1);
 
   result = impl::find_index(0xCCEEAAFFAACCFFDD ^ 0xCCCCCCCCCCCCCCCC);
@@ -25,6 +24,9 @@ TEST_CASE("Find right-most index") {
 
   result = impl::find_index(0xCACCAACAAABBAACC ^ 0xCCCCCCCCCCCCCCCC);
   CHECK(result == 0);
+
+  result = impl::find_index(0xACCAAACAAABBAAC0 ^ 0xCCCCCCCCCCCCCCCC);
+  CHECK(result == std::nullopt);
 
   result = impl::find_index(0xCACAAACAAABBAACA ^ 0xCCCCCCCCCCCCCCCC);
   CHECK(result == std::nullopt);

@@ -2,6 +2,7 @@
 #include <emmintrin.h>
 #include <smmintrin.h>
 #include <utility>
+#include <sapeaob/errors.hpp>
 
 #ifndef SAPEAOB_UTILS
 #define SAPEAOB_UTILS
