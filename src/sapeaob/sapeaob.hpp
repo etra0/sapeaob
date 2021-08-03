@@ -81,10 +81,8 @@ template <class it, std::uint16_t... Pattern> class step_calculator {
   }
 
   constexpr std::uint64_t spray_first_byte() {
-    std::uint8_t first_value = this->get_first_byte(Pattern...);
-    return utils::merge_bytes<std::uint64_t>(
-        first_value, first_value, first_value, first_value, first_value,
-        first_value, first_value, first_value);
+    std::uint8_t first_byte = this->get_first_byte(Pattern...);
+    return utils::merge_bytes<std::uint64_t>(first_byte);
   }
 
 public:
