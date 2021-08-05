@@ -1,6 +1,6 @@
-# SapeAOB - A compile time function generation for pattern scans.
+# SapeAOB - A fast compile time function generation for pattern scans.
 
-A micro-library which aids to create pattern scanning functions at compile time to
+A [fast](https://github.com/etra0/sapeaob#benchmark) micro-library which aids to create pattern scanning functions at compile time to
 enjoy that sweet compiler optimizations!
 
 # Usage
@@ -19,3 +19,8 @@ std::uint8_t test_arr2[] = {0xCC, 0xFF, 0xAA, 0xEE, 0xCC};
 result = p.scan_match(test_arr2, sizeof(test_arr2));
 CHECK(result == reinterpret_cast<std::uintptr_t>(test_arr2 + 2));
 ```
+
+# Benchmark
+![](https://github.com/etra0/sapeaob-bench/blob/master/output.png)
+
+You can check how fast is `sapeAOB` compared to other two libraries in [this repository](https://github.com/etra0/sapeaob-bench).
