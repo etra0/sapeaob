@@ -167,5 +167,6 @@ TEST_CASE("Different pattern sizes") {
 
 TEST_CASE("4 byte pattern") {
   std::uint8_t test_arr[] = {0xFF, 0xAA, 0xBB, 0xCC, 0xDD};
+
   CHECK(impl::function_compare<0xFF, ANY, 0xBB, 0xCC>::compare(test_arr));
 }

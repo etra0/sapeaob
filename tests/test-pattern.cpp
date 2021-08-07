@@ -39,6 +39,11 @@ TEST_CASE("Pattern not found") {
   std::uint8_t test_arr[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xFF};
   pattern<0xAA, ANY, 0xFE> p{};
   CHECK_THROWS_AS(p.scan_match(test_arr, sizeof(test_arr)), pattern_not_found);
+
+  SUBCASE("Check 0 doesn't break things") { 
+    pattern<0xAA, 0x00, 0xCC> p2{};
+    CHECK_THROWS_AS(p2.scan_match(test_arr, sizeof(test_arr)), pattern_not_found);
+  }
 }
 
 

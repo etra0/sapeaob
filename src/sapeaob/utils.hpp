@@ -31,7 +31,6 @@ template <typename TargetType>
 constexpr TargetType merge_bytes(std::uint8_t item) {
   static_assert(sizeof(TargetType) > 1,
                 "Don't use this function for types with size 1.");
-  int v = 0;
   return spray_byte<TargetType>(item,
                                 std::make_index_sequence<sizeof(TargetType)>());
 };
