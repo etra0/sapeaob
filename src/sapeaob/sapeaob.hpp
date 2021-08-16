@@ -6,9 +6,9 @@
 
 namespace sapeaob {
 
-enum op {
-  ANY,
-};
+namespace literals {
+enum literal_ { _ };
+}
 
 namespace impl {
 
@@ -40,10 +40,10 @@ private:
   template <class it, class V>
   static inline constexpr std::uint8_t compare_one_(it arr, std::size_t offset,
                                                     V byte) {
-    if constexpr (std::is_same_v<V, enum op>) {
+    if constexpr (std::is_same_v<V, literals::literal_>) {
       return true;
     }
-    return (*(arr + offset) == byte);
+    return (*(arr + offset) == static_cast<unsigned int>(byte));
   }
 };
 
@@ -114,10 +114,12 @@ public:
 
 template <auto... Pattern> struct pattern {
   explicit pattern() {
-    static_assert(((std::is_same_v<decltype(Pattern), enum op> ||
-                    (0x00 <= Pattern && Pattern <= 0xFF)) &&
-                   ...),
-                  "One of the arguments is either not of size 1 or of type ANY");
+    static_assert(
+        ((std::is_same_v<decltype(Pattern), literals::literal_> ||
+          (0x00U <= static_cast<unsigned int>(Pattern) &&
+           static_cast<unsigned int>(Pattern) <= 0xFFU)) &&
+         ...),
+        "One of the arguments is either not of size 1 or of type ANY");
   };
 
   // Search for the pattern in the specific array. If there's a match, it will

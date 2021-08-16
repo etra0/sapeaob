@@ -55,21 +55,21 @@ TEST_CASE("check aob with vector class") {
   CHECK(impl::function_compare<0xBB, 0xCC, 0xDD>::compare(v.begin() + 1));
 }
 
-TEST_CASE("Add the option to use any") {
+TEST_CASE("Add the option to use literals::_") {
   std::uint8_t test_arr[] = {0xAA, 0xBB, 0xAA, 0xDD, 0xAA};
-  CHECK(impl::function_compare<0xAA, ANY, 0xAA>::compare(test_arr));
-  CHECK(impl::function_compare<0xAA, ANY, 0xAA>::compare(test_arr + 2));
+  CHECK(impl::function_compare<0xAA, literals::_, 0xAA>::compare(test_arr));
+  CHECK(impl::function_compare<0xAA, literals::_, 0xAA>::compare(test_arr + 2));
 
   // this one should fail
-  REQUIRE_FALSE(impl::function_compare<0xAA, ANY, 0xAA>::compare(test_arr + 1));
+  REQUIRE_FALSE(impl::function_compare<0xAA, literals::_, 0xAA>::compare(test_arr + 1));
 }
 
-// This is discouraged but anyway we need to check this works.
+// This is discouraged but literals::_way we need to check this works.
 TEST_CASE("Single value to scan") {
   std::uint8_t test_arr[] = {0xAA, 0xBB, 0xCC};
   CHECK(impl::function_compare<0xAA>::compare(test_arr));
 
-  CHECK(impl::function_compare<ANY>::compare(test_arr));
+  CHECK(impl::function_compare<literals::_>::compare(test_arr));
 
   REQUIRE_FALSE(impl::function_compare<0xBB>::compare(test_arr));
 }
@@ -168,5 +168,5 @@ TEST_CASE("Different pattern sizes") {
 TEST_CASE("4 byte pattern") {
   std::uint8_t test_arr[] = {0xFF, 0xAA, 0xBB, 0xCC, 0xDD};
 
-  CHECK(impl::function_compare<0xFF, ANY, 0xBB, 0xCC>::compare(test_arr));
+  CHECK(impl::function_compare<0xFF, literals::_, 0xBB, 0xCC>::compare(test_arr));
 }

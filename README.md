@@ -5,11 +5,14 @@ enjoy that sweet compiler optimizations!
 
 # Usage
 ```cpp
+// We can use the namespace sapeaob::literals to use the `_` as
+// a wildcard (otherwise you can also write sapeaob::literals::_)
+using namespace sapeaob::literals;
 std::vector<std::uint8_t> test_arr{0xFF, 0xAA, 0xDF, 0xCC};
-// You can store the pattern to do the scan later. `sapeaob::ANY` corresponds
+// You can store the pattern to do the scan later. `_` corresponds
 // to a wildcard in the pattern.
-sapeaob::pattern<0xAA, sapeaob::ANY, 0xCC> p{};
-  
+sapeaob::pattern<0xAA, _, 0xCC> p{};
+
 // You can scan a vector
 std::uintptr_t result = p.scan_match(test_arr.begin(), test_arr.size());
 CHECK(result == reinterpret_it(test_arr.begin() + 1));
